@@ -2,6 +2,7 @@ package com.soprasteria.accesscontrol.securitytestingtool;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.logging.Level;
 
@@ -14,6 +15,22 @@ public class SQLInjectionManager {
     public File fullSQLResult = null;
     File[] sqlResults;
     public PrintWriter fullWriter;
+    private ArrayList<String> resultKeywords = new ArrayList<>();
+    ArrayList<String> lastRequest = new ArrayList<>();
+
+    public SQLInjectionManager() {
+        resultKeywords.add("[*]");
+        resultKeywords.add(new String("critical"));
+        resultKeywords.add("warning");
+        resultKeywords.add("parameter:");
+        resultKeywords.add("type:");
+        resultKeywords.add("title:");
+        resultKeywords.add("payload:");
+        resultKeywords.add("operating system:");
+        resultKeywords.add("application technology:");
+        resultKeywords.add("back-end DBMS:");
+        resultKeywords.add("test shows that");
+    }
 
     public void getUserInput(){
 
@@ -57,7 +74,7 @@ public class SQLInjectionManager {
                 } else if (i >= 1 && i <= headerCount) {
                     command += "-H " + infoContent.get(i) + " ";
                 } else if (i == headerCount + 1) {
-                    command += "-u " + infoContent.get(i) + " ";
+                    command += "-u \"" + infoContent.get(i) + "\" ";
                 } else if (i > headerCount + 1) {
                     if (i == headerCount + 2) {
                         command += "--data=\"";
@@ -74,10 +91,13 @@ public class SQLInjectionManager {
 
     public void writeSQLInjectionResult(String[] commands, int i) throws IOException {
 
-        PrintWriter writer = new PrintWriter(new FileWriter(sqlResults[i]),true);
         String line = "";
-        ArrayList<String> lastRequest = new ArrayList<>();
+
         ProcessBuilder pb = new ProcessBuilder(commands);
+        for (String s: commands
+             ) {
+            SecurityTestingTool.l.log(Level.INFO,s);
+        }
         SecurityTestingTool.l.log(Level.INFO,"Process starts.");
         Process sqlInjection = pb.start();
         BufferedReader reader = new BufferedReader(new InputStreamReader(sqlInjection.getInputStream()));
@@ -88,18 +108,30 @@ public class SQLInjectionManager {
         }
 
         SecurityTestingTool.l.log(Level.INFO,"Process ends.");
+        writeShortResult(i);
+        SecurityTestingTool.l.log(Level.INFO,"Finished writing.");
 
+
+    }
+
+    private void writeShortResult(int i) throws IOException{
+        PrintWriter writer = new PrintWriter(new FileWriter(sqlResults[i]),true);
         BufferedReader fileReader = new BufferedReader(new FileReader(fullSQLResult));
         ArrayList<String> resultLines = new ArrayList();
-        SecurityTestingTool.l.log(Level.INFO,"Writing to results.txt.");
+        SecurityTestingTool.l.log(Level.INFO,"Writing to sqlResult.txt.");
         for (String l: lastRequest) {
             if (!l.equals("")) {
-                if (l.contains("[*]") || l.contains("WARNING") || l.contains("CRITICAL"))
-                    writer.println(l);
+                for (String keyword: resultKeywords
+                ){
+                    if (l.toLowerCase().contains(keyword)) {
+                        writer.println(l);
+                        if (keyword == "payload:"){
+                            writer.println("");
+                        }
+                    }
+                }
             }
         }
-        SecurityTestingTool.l.log(Level.INFO,"Finished writing.");
         writer.close();
-
     }
 }
