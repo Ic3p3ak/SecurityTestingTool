@@ -1,10 +1,14 @@
 package com.soprasteria.accesscontrol.securitytestingtool;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.logging.Level;
+import java.io.FileReader;
+import java.util.Properties;
 
 public class SQLInjectionManager {
 
@@ -30,69 +34,79 @@ public class SQLInjectionManager {
         resultKeywords.add("application technology:");
         resultKeywords.add("back-end DBMS:");
         resultKeywords.add("test shows that");
+        sqlResults = new File[2];
+        sqlResults[0] = new File(SecurityTestingTool.resultPath + "/sqlResult_GET.txt");
+        sqlResults[1] = new File(SecurityTestingTool.resultPath + "/sqlResult_POST.txt");
     }
 
-    public void getUserInput(){
+    public String[] createCommands(String method) throws FileNotFoundException {
 
-        System.out.println("How many different Injections do you want to make? :\n");
-        String textNumberOfFiles = scanner.next();
-        SecurityTestingTool.l.log(Level.INFO,textNumberOfFiles + " different Files.");
-        while(!textNumberOfFiles.matches("[+-]?\\d*(\\.\\d+)?")){
-            System.out.println("How many different Injections do you want to make? :\n");
-            textNumberOfFiles = scanner.next();
-            SecurityTestingTool.l.log(Level.INFO,textNumberOfFiles + " different Files.");
-        }
-        numberOfFiles = Integer.parseInt(textNumberOfFiles);
-        sqlResults = new File[numberOfFiles];
-        for (int i = 0; i< sqlResults.length; i++){
-            sqlResults[i] = new File(SecurityTestingTool.resultPath + "/sqlResult_" + (i+1) + ".txt");
-        }
-        for (int i = 0; i<numberOfFiles;i++) {
-            System.out.println("Please insert the Path where the information file number " + (1+i) + " is located: \n");
-            filePaths.add(scanner.next());
-        }
-    }
-
-    public String[] createCommands(String filePath) throws FileNotFoundException {
-
-            File info = new File(filePath);
-            Scanner obj = new Scanner(info);
+        if (method.equals("get")) {
             command = new String();
             int headerCount = 0;
+            int attributeCount = 0;
             ArrayList<String> infoContent = new ArrayList<>();
-            while (obj.hasNextLine()) {
-                infoContent.add(obj.nextLine());
-                SecurityTestingTool.l.log(Level.INFO, infoContent.get(infoContent.size() - 1));
-            }
-            if (infoContent.get(1).matches("[+-]?\\d*(\\.\\d+)?")) {
-                headerCount = Integer.parseInt(infoContent.get(1));
-                infoContent.remove(infoContent.get(1));
-            }
-            for (int i = 0; i < infoContent.size(); i++) {
-                if (i == 0) {
-                    command = infoContent.get(i) + " --ignore-stdin --batch ";
-                } else if (i >= 1 && i <= headerCount) {
-                    command += "-H " + infoContent.get(i) + " ";
-                } else if (i == headerCount + 1) {
-                    command += "-u \"" + infoContent.get(i) + "\" ";
-                } else if (i > headerCount + 1) {
-                    if (i == headerCount + 2) {
-                        command += "--data=\"";
-                    }
-                    if (i < infoContent.size() - 1) {
-                        command += infoContent.get(i) + "&";
-                    } else {
-                        command += infoContent.get(i) + "\"";
+            try (FileReader fileReader = new FileReader("configSQLInjection");) {
+                Properties properties = new Properties();
+                properties.load(fileReader);
+                if (properties.getProperty("amountOfHeaders").matches("[+-]?\\d*(\\.\\d+)?")) {
+                    headerCount = Integer.parseInt(properties.getProperty("amountOfHeaders"));
+                }
+                if (properties.getProperty("ammountOfAttributes").matches("[+-]?\\d*(\\.\\d+)?")) {
+                    attributeCount = Integer.parseInt(properties.getProperty("ammountOfAttributes"));
+                }
+                command = properties.getProperty("sqlmapPath") + " --ignore-stdin --batch ";
+                if (headerCount > 0) {
+                    for (int i = 0; i < headerCount; i++) {
+                        command += "-H " + properties.getProperty("header" + i) + " ";
                     }
                 }
+                command += "-u \"" + properties.getProperty("GETtarget") + "\"";
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             return new String[]{"cmd", "/c", "python " + command};
+        }
+        else if (method.equals("post")){
+            command = new String();
+            int headerCount = 0;
+            int attributeCount = 0;
+            ArrayList<String> infoContent = new ArrayList<>();
+            try (FileReader fileReader = new FileReader("configSQLInjection");) {
+                Properties properties = new Properties();
+                properties.load(fileReader);
+                if (properties.getProperty("amountOfHeaders").matches("[+-]?\\d*(\\.\\d+)?")) {
+                    headerCount = Integer.parseInt(properties.getProperty("amountOfHeaders"));
+                }
+                if (properties.getProperty("ammountOfAttributes").matches("[+-]?\\d*(\\.\\d+)?")) {
+                    attributeCount = Integer.parseInt(properties.getProperty("ammountOfAttributes"));
+                }
+                command = properties.getProperty("sqlmapPath") + " --ignore-stdin --batch ";
+                if (headerCount > 0) {
+                    for (int i = 0; i < headerCount; i++) {
+                        command += "-H " + properties.getProperty("header" + i) + " ";
+                    }
+                }
+                command += "-u \"" + properties.getProperty("POSTtarget") + "\" " + "--data=\"";
+                for (int i = 1; i <= attributeCount; i++) {
+                    if (i < attributeCount) {
+                        command += properties.getProperty("attribute"+i) + "&";
+                    } else {
+                        command += properties.getProperty("attribute"+i) + "\" --method POST";
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return new String[]{"cmd", "/c", "python " + command};
+        }
+        return null;
     }
 
-    public void writeSQLInjectionResult(String[] commands, int i) throws IOException {
+    public void writeSQLInjectionResult(String[] commands, String method) throws IOException {
 
         String line = "";
-
+        lastRequest.clear();
         ProcessBuilder pb = new ProcessBuilder(commands);
         for (String s: commands
              ) {
@@ -108,16 +122,19 @@ public class SQLInjectionManager {
         }
 
         SecurityTestingTool.l.log(Level.INFO,"Process ends.");
-        writeShortResult(i);
+        if (method.equals("get")){
+            writeShortResult(0);
+        }
+        else {
+            writeShortResult(1);
+        }
         SecurityTestingTool.l.log(Level.INFO,"Finished writing.");
-
+        reader.close();
 
     }
 
     private void writeShortResult(int i) throws IOException{
         PrintWriter writer = new PrintWriter(new FileWriter(sqlResults[i]),true);
-        BufferedReader fileReader = new BufferedReader(new FileReader(fullSQLResult));
-        ArrayList<String> resultLines = new ArrayList();
         SecurityTestingTool.l.log(Level.INFO,"Writing to sqlResult.txt.");
         for (String l: lastRequest) {
             if (!l.equals("")) {
