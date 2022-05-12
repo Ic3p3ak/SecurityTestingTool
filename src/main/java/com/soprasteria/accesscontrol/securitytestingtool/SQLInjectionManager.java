@@ -12,8 +12,6 @@ import java.util.Properties;
 
 public class SQLInjectionManager {
 
-    Scanner scanner = new Scanner(System.in);
-    int numberOfFiles = 0;
     public ArrayList<String> filePaths = new ArrayList<>();
     String command;
     public File fullSQLResult = null;
@@ -35,8 +33,8 @@ public class SQLInjectionManager {
         resultKeywords.add("back-end DBMS:");
         resultKeywords.add("test shows that");
         sqlResults = new File[2];
-        sqlResults[0] = new File(SecurityTestingTool.resultPath + "/sqlResult_GET.txt");
-        sqlResults[1] = new File(SecurityTestingTool.resultPath + "/sqlResult_POST.txt");
+        sqlResults[0] = new File(SecurityTestingTool.logFolder + "/sqlResult_GET.txt");
+        sqlResults[1] = new File(SecurityTestingTool.logFolder + "/sqlResult_POST.txt");
     }
 
     public String[] createCommands(String method) throws FileNotFoundException {
@@ -44,18 +42,14 @@ public class SQLInjectionManager {
         if (method.equals("get")) {
             command = new String();
             int headerCount = 0;
-            int attributeCount = 0;
-            ArrayList<String> infoContent = new ArrayList<>();
             try (FileReader fileReader = new FileReader("configSQLInjection");) {
                 Properties properties = new Properties();
                 properties.load(fileReader);
                 if (properties.getProperty("amountOfHeaders").matches("[+-]?\\d*(\\.\\d+)?")) {
                     headerCount = Integer.parseInt(properties.getProperty("amountOfHeaders"));
                 }
-                if (properties.getProperty("ammountOfAttributes").matches("[+-]?\\d*(\\.\\d+)?")) {
-                    attributeCount = Integer.parseInt(properties.getProperty("ammountOfAttributes"));
-                }
-                command = properties.getProperty("sqlmapPath") + " --ignore-stdin --batch ";
+
+                command = SecurityTestingTool.mainDir + properties.getProperty("sqlmapPath") + " --ignore-stdin --batch ";
                 if (headerCount > 0) {
                     for (int i = 0; i < headerCount; i++) {
                         command += "-H " + properties.getProperty("header" + i) + " ";
@@ -71,7 +65,6 @@ public class SQLInjectionManager {
             command = new String();
             int headerCount = 0;
             int attributeCount = 0;
-            ArrayList<String> infoContent = new ArrayList<>();
             try (FileReader fileReader = new FileReader("configSQLInjection");) {
                 Properties properties = new Properties();
                 properties.load(fileReader);
@@ -81,7 +74,7 @@ public class SQLInjectionManager {
                 if (properties.getProperty("ammountOfAttributes").matches("[+-]?\\d*(\\.\\d+)?")) {
                     attributeCount = Integer.parseInt(properties.getProperty("ammountOfAttributes"));
                 }
-                command = properties.getProperty("sqlmapPath") + " --ignore-stdin --batch ";
+                command = SecurityTestingTool .mainDir + properties.getProperty("sqlmapPath") + " --ignore-stdin --batch ";
                 if (headerCount > 0) {
                     for (int i = 0; i < headerCount; i++) {
                         command += "-H " + properties.getProperty("header" + i) + " ";

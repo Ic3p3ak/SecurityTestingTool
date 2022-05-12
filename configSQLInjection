@@ -1,10 +1,10 @@
-sqlmapPath=C:/Users/maxbr/IdeaProjects/SecurityTestingTool/sqlmap/sqlmapproject-sqlmap-2038512/sqlmap.py
+sqlmapPath=/sqlmap/sqlmapproject-sqlmap-2038512/sqlmap.py
 amountOfHeaders=0
 header1=
 header2=
 header3=
-GETtarget=http://192.168.5.128/mutillidae/index.php?page=user-info.php&username=admin&password=aaas&user-info-php-submit-button=View+Account+Details
-POSTtarget=http://192.168.5.128/mutillidae/index.php?page=login.php
+GETtarget=http://192.168.224.131mutillidae/index.php?page=user-info.php&username=admin&password=aaas&user-info-php-submit-button=View+Account+Details
+POSTtarget=http://192.168.224.131/mutillidae/index.php?page=login.php
 ammountOfAttributes=3
 attribute1=username=admin
 attribute2=password=aaa

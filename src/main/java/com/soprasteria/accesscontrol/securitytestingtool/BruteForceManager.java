@@ -29,7 +29,7 @@ public class BruteForceManager {
             if(properties.getProperty("numberOfBodyAttributes").matches("[+-]?\\d*(\\.\\d+)?")) {
                 attributeCount = Integer.parseInt(properties.getProperty("numberOfBodyAttributes"));
             }
-            command = properties.getProperty("hydraPath") + " -v -V -o " + properties.getProperty("outputPath");
+            command = SecurityTestingTool.mainDir + properties.getProperty("hydraPath") + " -v -V -o " + SecurityTestingTool.mainDir + properties.getProperty("outputPath");
             if (properties.getProperty("useUsernameList").equals("true")){
                 parameterUsername = " -L " + properties.getProperty("usernameList");
             }
@@ -38,7 +38,7 @@ public class BruteForceManager {
                 parameterUsername = " -l " + properties.getProperty("username");
             }
             if (properties.getProperty("usePasswordList").equals("true")){
-                parameterPW = " -P " + properties.getProperty("passwordList");
+                parameterPW = " -P " + SecurityTestingTool.mainDir + properties.getProperty("passwordList");
             }
             else
             {

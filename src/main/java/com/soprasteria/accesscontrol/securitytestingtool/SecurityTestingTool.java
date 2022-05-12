@@ -19,8 +19,8 @@ import java.util.logging.SimpleFormatter;
 public class SecurityTestingTool {
 
     public static Logger l = Logger.getLogger(SecurityTestingTool.class.getName());
-    public static String resultPath = "/logs";
-    public static File logFolder = new File(resultPath);
+    public static String resultPath;
+    public static File logFolder;
     public static SecurityTestingTool securityTestingTool;
     public static SQLInjectionManager sqlInjectionManager;
     public static BruteForceManager bruteForceManager;
@@ -28,28 +28,33 @@ public class SecurityTestingTool {
     SimpleFormatter sf = new SimpleFormatter();
     Properties properties = new Properties();
     protected String reportPath;
-    public File reportFile = new File(reportPath);
+    public File reportFile;
+    public static String mainDir;
 
 
     //Constructor:
     public SecurityTestingTool() throws IOException{
 
-        sqlInjectionManager = new SQLInjectionManager();
-        bruteForceManager = new BruteForceManager();
+        String mainDirSTring = System.getProperty("user.dir");
+        mainDir = mainDirSTring.replace("\\","/");
+        logFolder  = new File(mainDir+"/log");
         l.setLevel(Level.INFO);
         fh.setFormatter(sf);
         fh.setLevel(Level.INFO);
         l.addHandler(fh);
         l.log(Level.INFO,"Logger created");
         logFolder.mkdir();
+        sqlInjectionManager = new SQLInjectionManager();
+        bruteForceManager = new BruteForceManager();
         try(FileReader fileReader = new FileReader("configSecurityTestingTool")) {
             properties.load(fileReader);
         }
         reportPath = properties.getProperty("logPath") + "/report.txt";
+        reportFile  = new File(reportPath);
         if (logFolder.exists()){
             l.log(Level.INFO,"Folder exists!");
             try {
-                sqlInjectionManager.fullSQLResult = new File (resultPath + "/fullResults.txt");
+                sqlInjectionManager.fullSQLResult = new File (logFolder + "/fullResults.txt");
                 if (sqlInjectionManager.fullSQLResult.createNewFile()){
 
                     l.log(Level.INFO,"result file created!\n");
@@ -166,7 +171,7 @@ public class SecurityTestingTool {
         line = "";
         lineB="";
         reader.close();
-        reader = new BufferedReader(new FileReader(bruteForceManager.properties.getProperty("outputPath")));
+        reader = new BufferedReader(new FileReader(mainDir + bruteForceManager.properties.getProperty("outputPath")));
         while ((lineB = reader.readLine()) != null){
             if (lineB.toLowerCase().contains("[http-post-form]")){
                 bruteForceSuccessful = true;

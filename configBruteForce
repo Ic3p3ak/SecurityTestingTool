@@ -1,12 +1,12 @@
-hydraPath=C:/Users/maxbr/IdeaProjects/SecurityTestingTool/Hydra/thc-hydra-9.3/hydra
-outputPath=C:/logs/hydraOutput.txt
+hydraPath=/Hydra/thc-hydra-9.3/hydra
+outputPath=/logs/hydraOutput.txt
 useUsernameList=false
 username=admin
 usernameList=
 usePasswordList=true
 password=
-passwordList=C:/Users/maxbr/IdeaProjects/SecurityTestingTool/Hydra/Wordlist.txt
-targetIP=192.168.5.128
+passwordList=/Hydra/Wordlist.txt
+targetIP=192.168.224.131
 targetPath=/mutillidae/index.php?page=login.php
 numberOfBodyAttributes=3
 1=username=^USER^
