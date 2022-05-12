@@ -49,12 +49,12 @@ public class SecurityTestingTool {
         try(FileReader fileReader = new FileReader("configSecurityTestingTool")) {
             properties.load(fileReader);
         }
-        reportPath = properties.getProperty("logPath") + "/report.txt";
+        reportPath = mainDir + properties.getProperty("logPath") + "/report.txt";
         reportFile  = new File(reportPath);
         if (logFolder.exists()){
             l.log(Level.INFO,"Folder exists!");
             try {
-                sqlInjectionManager.fullSQLResult = new File (logFolder + "/fullResults.txt");
+                sqlInjectionManager.fullSQLResult = new File (mainDir + "/logs/fullResults.txt");
                 if (sqlInjectionManager.fullSQLResult.createNewFile()){
 
                     l.log(Level.INFO,"result file created!\n");

@@ -33,8 +33,8 @@ public class SQLInjectionManager {
         resultKeywords.add("back-end DBMS:");
         resultKeywords.add("test shows that");
         sqlResults = new File[2];
-        sqlResults[0] = new File(SecurityTestingTool.logFolder + "/sqlResult_GET.txt");
-        sqlResults[1] = new File(SecurityTestingTool.logFolder + "/sqlResult_POST.txt");
+        sqlResults[0] = new File(SecurityTestingTool.mainDir + "/logs/sqlResult_GET.txt");
+        sqlResults[1] = new File(SecurityTestingTool.mainDir + "/logs/sqlResult_POST.txt");
     }
 
     public String[] createCommands(String method) throws FileNotFoundException {
