@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -25,7 +26,8 @@ public class SecurityTestingTool {
     public static BruteForceManager bruteForceManager;
     public FileHandler fh = new FileHandler("/logs/securityTestingLog.log",500000,2,true);
     SimpleFormatter sf = new SimpleFormatter();
-    protected String reportPath = "C:/logs/report.txt";
+    Properties properties = new Properties();
+    protected String reportPath;
     public File reportFile = new File(reportPath);
 
 
@@ -40,6 +42,10 @@ public class SecurityTestingTool {
         l.addHandler(fh);
         l.log(Level.INFO,"Logger created");
         logFolder.mkdir();
+        try(FileReader fileReader = new FileReader("configSecurityTestingTool")) {
+            properties.load(fileReader);
+        }
+        reportPath = properties.getProperty("logPath") + "/report.txt";
         if (logFolder.exists()){
             l.log(Level.INFO,"Folder exists!");
             try {
